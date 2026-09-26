@@ -1,0 +1,21 @@
+# Core dependencies for video preprocessing and tensor operations
+# torch, torchaudio, torchvision are supplied by ComfyUI runtime
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# =============================================================================
+# Face restore (v2.4.6) - 所有依赖均为可选，未安装时自动降级
+# =============================================================================
+# 最佳效果 (推荐安装):
+#   insightface>=0.7.3  - 人脸检测与特征提取
+#   onnxruntime-gpu>=1.17.0 或 onnxruntime  - insightface 推理后端
+#
+# GFPGAN 升级 (可选):
+#   gfpgan (使用 --no-deps 安装)  - 高质量人脸修复
+#   facexlib  - gfpgan 依赖
+#
+# 安装命令:
+#   pip install insightface onnxruntime-gpu
+#   pip install gfpgan --no-deps facexlib
+#
+# 注: 即使不安装任何额外依赖，面部修复功能仍可使用 OpenCV 增强降级方案

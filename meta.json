@@ -1,0 +1,31 @@
+{
+  "name": "yimo-minimax-h3-conditioning",
+  "version": "3.0.0",
+  "category": "Yimo/MiniMax H3/音频",
+  "license": "GPL-3.0-or-later",
+  "author": "yimo",
+  "validated_on": "2026-09-12",
+  "validated_comfyui_commit": "6f7cd7fce",
+  "python": "3.10+",
+  "external_runtime_dependencies": [
+    "opencv-python>=4.8.0",
+    "numpy>=1.24.0",
+    "torchvision>=0.15.0"
+  ],
+  "scope": "Yimo-branded MiniMax H3 Audio Conditioning node suite. v3.0.0: 全面显存优化（采样循环、PDD 双采中间态、HighRes 分块采样、FaceRestore 逐帧循环、Concatenate 逐块解码均加入 soft_empty_cache），Concatenate 解码改为内存优先 + 超阈值落盘，SequenceSampler 新增 chunk_memory_threshold_mb 参数控制落盘阈值。",
+  "backward_compat": {
+    "v2_3_0_note": "Return value is internally a dataclass but still unpacks to 8-tuple.",
+    "v2_5_6_note": "SingleSampler / SequenceSampler 新增 sampling_mode 与 external_sigmas 参数。默认 standard 模式与旧版本行为完全一致。",
+    "v2_5_7_note": "SingleSampler / SequenceSampler 新增 color_match_mode / color_match_strength / color_match_reference_frames 参数。默认 off 与旧版本行为完全一致。",
+    "v2_5_9_note": "新增 YimoH3PostProcessSplit / YimoH3PostProcessMerge 两个节点。不影响现有节点行为。",
+    "v2_6_0_note": "预留放大节点接入点；当前版本未实现，节点列表中不注册，也不依赖 einops。",
+    "v2_6_1_note": "A1/A2/A3/A4/B1/B2/B4/B5/C1/C2/C3/C4/C5 修复。audio_continuity 默认值由 inherit_style 改为 break；hard_concat 强制 overlap=0；用户显式 first_frame 优先于自动尾帧继承。",
+    "v2_6_2_note": "B2 补丁 (face_restore clamp)；统一缓存路径并删除 longvideo.py；transition table 全部改为 break；sampler 颜色匹配 import 归位到 color_match_utils。",
+    "v2_6_3_note": "A4 音频 mask 语义落地；B5 SequenceSampler 用户显式首帧不再被尾帧继承覆盖；B4 段缓存改为纯 tensor 序列化；hard_concat 不再继承前段尾帧；高清重采样面部区域坐标按 scale 缩放；C1 版本号统一到 v2.6.3；C3 删除残留死代码；C5 monkey-patch 守卫日志改进。",
+    "v2_6_4_note": "仅文档、日志、tooltip 更新，无功能逻辑改动。_inject_context 增加注入量语义提示；overlap_frames tooltip 细化；致谢补全；删除 meta.json 中已失效的 LBH 引用。",
+    "v2_7_0_note": "PDD 双阶段采样在 SingleSampler / SequenceSampler 内部直接生效（sampling_mode=pdd_two_stage），中间态用双线性插值放大，不依赖外部 LBH；删除 TransitionPlan.audio_continuity / suggested_first_frame 死字段；删除 i18n.set_language；删除 resample_video.face_images 未使用参数（身份参考改从 segment_bundle 读取）；conditioning_node 从 core 导入 REF_CURVE_* 常量；audio_continuity 选项精简为 context_inject / break。",
+    "v2_7_1_note": "全面显存优化，无功能逻辑破坏性改动。采样循环（sequence_sample 每段末）、PDD 双采中间态（放大后释放 LOW 阶段张量）、HighRes 分块采样（每 tile 末 + 每 chunk 末）、FaceRestore 逐帧循环（每 32 帧）、Concatenate 逐块解码（每 chunk 末）均加入 soft_empty_cache；Concatenate 的 _run_chunked / _run_independent 改为内存优先 + 超阈值落盘；SequenceSampler 新增 chunk_memory_threshold_mb 参数（默认 4096 MB）控制 images 模式解码的内存阈值。",
+    "v3_0_0_note": "版本号统一为 3.0.0。本次无功能逻辑改动，仅统一版本标识、修正文档与代码不一致项（README audio_continuity 默认值、i18n 节点描述、meta.scope）。"
+  },
+ "note": "本插件参考/借鉴：ComfyUI 官方 MiniMax H3 节点实现（字段语义与 minimax_payload 结构）、T8star-Aix（PDD 双时钟采样思路，项目 comfyui-minimax-h3-audio-T8）、Jalen-Brunson（PDD LoRA 加载与头库安装，项目 ComfyUI-MiniMax-H3-PDD-Acc）、LBH-123-AI（学习型 Latent 放大，项目 Comfyui_Minimax_h3_latent_Upscaler）、RES4LYF（res_multistep 采样器）、GFPGAN / InsightFace / OpenCV（人脸修复与图像处理）、Reinhard 颜色迁移与经典直方图 / MKL 色彩匹配算法。PDD 双采节点仅兼容 PDD LoRA，不兼容 Turbo / Lightning / DMD。JS files remain at package root level。"
+}
