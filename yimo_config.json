@@ -1,0 +1,13 @@
+{
+  "language": "zh",
+  "reference_defaults": {
+    "retention": "fully_preserved",
+    "retention_scale": 1.0,
+    "curve_preset": "off"
+  },
+  "text_boost_defaults": {
+    "strength": 1.0,
+    "mode": "deviation",
+    "renorm": true
+  }
+}

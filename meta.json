@@ -1,0 +1,17 @@
+{
+  "name": "yimo-minimax-h3-conditioning",
+  "version": "5.0.0",
+  "category": "Yimo/MiniMax H3/音频",
+  "license": "GPL-3.0-or-later",
+  "author": "yimo",
+  "validated_on": "2026-10-15",
+  "validated_comfyui_commit": "6f7cd7fce",
+  "python": "3.10+",
+  "external_runtime_dependencies": [
+    "opencv-python>=4.8.0",
+    "numpy>=1.24.0",
+    "torchvision>=0.15.0"
+  ],
+  "scope": "Yimo-branded MiniMax H3 Audio Conditioning node suite. 采样器支持 sampler_name（dual_clock_euler / ComfyUI 原生）+ scheduler + steps / cfg / denoise / shift_video / shift_audio。段间逻辑（上下文注入 / 尾帧继承 / 身份继承 / 面部修复 / 颜色匹配 / 断点续采 / 参考曲线 / images 模式 / 自动导出）全部保留。面部修复在 bank=None 时仍走通用修复路径。缓存目录独立：双时钟走 _segment_cache_dc/，单时钟走 _segment_cache/。",
+  "note": "本插件参考/借鉴：ComfyUI 官方 MiniMax H3 节点实现（字段语义与 minimax_payload 结构）、T8star-Aix（双时钟采样思路，项目 comfyui-minimax-h3-audio-T8，GPL-3.0-or-later）、GFPGAN / InsightFace / OpenCV（人脸修复与图像处理）、Reinhard 颜色迁移与经典直方图 / MKL 色彩匹配算法。JS files remain at package root level。"
+}
