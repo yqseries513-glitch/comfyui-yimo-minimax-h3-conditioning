@@ -19,6 +19,7 @@ from typing import Callable, Sequence
 import torch
 
 import comfy.model_management
+import comfy.nested_tensor
 import comfy.samplers
 import comfy.utils
 from comfy_api.latest import io
@@ -505,6 +506,17 @@ def dual_clock_sequence_sample(
         report_lines.append(f"status={color_match_info['status']}")
         report_lines.append(f"match_level={color_match_info['match_level']}")
         report_lines.append(f"matched_frames={color_match_info['matched_frames']}")
+
+        # 统一 video/audio device，避免下游 pack_latents 因 device 分叉报错。
+        try:
+            _v, _a = nested_av_parts(sampled)
+            if _v.device != _a.device:
+                sampled = dict(sampled)
+                sampled["samples"] = comfy.nested_tensor.NestedTensor(
+                    (_v, _a.to(device=_v.device, dtype=_v.dtype))
+                )
+        except Exception:
+            pass
 
         sampled_segments.append(sampled)
 

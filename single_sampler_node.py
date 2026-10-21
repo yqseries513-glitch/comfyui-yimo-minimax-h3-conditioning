@@ -16,6 +16,7 @@ from datetime import datetime
 import torch
 
 import comfy.model_management
+import comfy.nested_tensor
 import comfy.samplers
 import comfy.utils
 from comfy_api.latest import io
@@ -702,6 +703,17 @@ class YimoH3SingleSampler(io.ComfyNode):
             except Exception as e:
                 logger.warning("自动保存失败: %s", e)
                 report_lines.append(f"⚠️ 自动保存失败: {e}")
+
+        # 统一 video/audio device，避免下游 pack_latents 因 device 分叉报错。
+        try:
+            _v, _a = nested_av_parts(sampled_out)
+            if _v.device != _a.device:
+                sampled_out = dict(sampled_out)
+                sampled_out["samples"] = comfy.nested_tensor.NestedTensor(
+                    (_v, _a.to(device=_v.device, dtype=_v.dtype))
+                )
+        except Exception:
+            pass
 
         report_lines.append("segment sampling complete")
         return io.NodeOutput(sampled_out, "\n".join(report_lines))

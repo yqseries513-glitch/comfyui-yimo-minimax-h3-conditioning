@@ -978,8 +978,33 @@ def _concatenate_av_latents(
                 else:
                     audio_parts.append(audio[:, :, :, actual_a_t:])
 
-    final_video = torch.cat(video_parts, dim=2)
-    final_audio = torch.cat(audio_parts, dim=-1)
+    # ---------------------------------------------------------------------
+    # 修复：拼接前统一目标设备 / dtype。
+    #
+    # 原实现只对 video 做了 .to(device)，audio 直接 torch.cat，导致
+    # 当各段 audio 张量分散在 cuda:0 与 cpu 上时触发：
+    #   RuntimeError: Expected all tensors to be on the same device,
+    #                 but got tensors is on cuda:0, different from other
+    #                 tensors on cpu (when checking argument in method
+    #                 wrapper_CUDA_cat)
+    #
+    # 这里选择的目标设备优先取 video_parts 中出现的第一个 CUDA 设备
+    # （保持与模型/Diffusion 计算一致），否则回退到 video_parts[0].device。
+    # ---------------------------------------------------------------------
+    device = video_parts[0].device
+    dtype = video_parts[0].dtype
+    for v in video_parts:
+        if v.device.type == "cuda":
+            device = v.device
+            dtype = v.dtype
+            break
+
+    final_video = torch.cat([v.to(device=device, dtype=dtype) for v in video_parts], dim=2)
+    final_audio = torch.cat([a.to(device=device, dtype=dtype) for a in audio_parts], dim=-1)
+
+    # 统一 video/audio device，避免下游 pack_latents 因 device 分叉报错。
+    if final_video.device != final_audio.device:
+        final_audio = final_audio.to(device=final_video.device, dtype=final_video.dtype)
 
     return {"samples": comfy.nested_tensor.NestedTensor((final_video, final_audio))}
 
@@ -1270,6 +1295,17 @@ def sequence_sample(
         report_lines.append(f"status={color_match_info['status']}")
         report_lines.append(f"match_level={color_match_info['match_level']}")
         report_lines.append(f"matched_frames={color_match_info['matched_frames']}")
+
+        # 统一 video/audio device，避免下游 pack_latents 因 device 分叉报错。
+        try:
+            _v, _a = nested_av_parts(sampled)
+            if _v.device != _a.device:
+                sampled = dict(sampled)
+                sampled["samples"] = comfy.nested_tensor.NestedTensor(
+                    (_v, _a.to(device=_v.device, dtype=_v.dtype))
+                )
+        except Exception:
+            pass
 
         sampled_segments.append(sampled)
 

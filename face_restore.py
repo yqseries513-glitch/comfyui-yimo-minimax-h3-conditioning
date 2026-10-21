@@ -1085,6 +1085,9 @@ def restore_sampled_av(sampled: dict, video_vae, bank, **params):
     frames = decode_video_latent(video, video_vae)
     restored, stats = restore_frames(frames, bank, **params)
     new_video = video_vae.encode(restored)
+    # 统一 video/audio device，避免下游 pack_latents 因 device 分叉报错。
+    # video_vae.encode() 通常返回 cuda 张量，而 audio 来自 intermediate_device（多为 cpu）。
+    new_video = new_video.to(device=audio.device, dtype=audio.dtype)
     out = sampled.copy()
     out["samples"] = comfy.nested_tensor.NestedTensor((new_video, audio))
     return out, stats_report(stats)
